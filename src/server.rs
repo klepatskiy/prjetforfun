@@ -2,6 +2,7 @@ mod domain;
 mod repository;
 mod config;
 
+use std::process::exit;
 use dotenv::dotenv;
 use std::sync::Arc;
 use tonic::{transport::Server, Request, Response, Status};
@@ -53,10 +54,14 @@ impl Greeter for MyGreeter {
             Err(e) => eprintln!("Error creating user: {:?}", e),
         }
 
-        let user_message = match users {
-            Ok(users) => format!("Fetched {} users", users.len()),
-            Err(_) => "Failed to fetch users".to_string(),
+        let user_list = match users {
+            Ok(users) => users,
+            Err(_) => exit(0),
         };
+
+        for user in user_list {
+            println!("{}", user.id)
+        }
 
         let response = greeter::HelloResponse {
             message: format!("Hello {}!", request.into_inner().name).into(),
