@@ -16,6 +16,7 @@ async-trait = "0.1.81"
 uuid = { version = "1.10.0", features = ["v4"] }
 url = "2.5.2"
 thiserror = "1.0.63"
+mockall = "0.13.0"
 
 [build-dependencies]
 tonic-build = "0.12.1"
