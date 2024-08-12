@@ -14,7 +14,6 @@ use crate::app::query::get_full_url::GetFullUrlRepository;
 use crate::di::Container;
 use crate::greeter::{CreateShortUrlRequest, CreateShortUrlResponse, GetUrlRequest, GetUrlResponse};
 use crate::repository::postgres::url_repository::url_repository::PostgresUrlRepository;
-use crate::repository::postgres::user_repository::user_repository::{UserRepository};
 
 pub mod greeter {
     tonic::include_proto!("greeter");

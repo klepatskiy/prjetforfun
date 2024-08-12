@@ -1,5 +1,4 @@
 use greeter::greeter_client::GreeterClient;
-use greeter::GetUrlRequest;
 use crate::greeter::CreateShortUrlRequest;
 
 pub mod greeter {
