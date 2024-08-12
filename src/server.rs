@@ -89,7 +89,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = config::create_pool().await.expect("Failed to create pool");
     let pool = Arc::new(pool);
 
-    // let user_repo = Arc::new(PostgresUserRepository::new(Arc::clone(&pool)));
     let repo = PostgresUrlRepository::new(Arc::clone(&pool));
     let container = Container::new(repo.clone(), repo);
     let addr = "[::1]:50051".parse()?;
