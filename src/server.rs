@@ -14,7 +14,7 @@ use crate::di::Container;
 use crate::greeter::{
     CreateShortUrlRequest, CreateShortUrlResponse, GetUrlRequest, GetUrlResponse,
 };
-use crate::repository::postgres::url_repository::url_repository::PostgresUrlRepository;
+use crate::repository::postgres::url::url_repository::PostgresUrlRepository;
 use greeter::greeter_server::{Greeter, GreeterServer};
 
 pub mod greeter {

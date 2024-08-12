@@ -1,5 +1,5 @@
 use crate::app::error::AppError;
-use crate::domain::url::url::Url;
+use crate::domain::url::url_entity::Url;
 use async_trait::async_trait;
 use sqlx::PgPool;
 use std::sync::Arc;
@@ -27,7 +27,7 @@ impl crate::app::command::create_short_url::CreateShortUrlRepository for Postgre
             .bind(url.id)
             .bind(url.url_full)
             .bind(&url.url_short)
-            .bind(&url.user_id)
+            .bind(url.user_id)
             .bind(url.created_at)
             .execute(&*self.pool)
             .await
