@@ -1,5 +1,6 @@
 use greeter::greeter_client::GreeterClient;
 use greeter::GetUrlRequest;
+use crate::greeter::CreateShortUrlRequest;
 
 pub mod greeter {
     tonic::include_proto!("greeter");
@@ -9,12 +10,12 @@ pub mod greeter {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = GreeterClient::connect("http://[::1]:50051").await?;
 
-    let request = tonic::Request::new(GetUrlRequest {
-        short_url: "Tonic".into(),
+    let request = tonic::Request::new(CreateShortUrlRequest {
+        full_url: "https://www.youtube.com/".into(),
     });
 
     println!("Sending request to gRPC Server...");
-    let response = client.get_url(request).await?;
+    let response = client.create_short_url(request).await?;
 
     println!("RESPONSE={:?}", response);
 
