@@ -1,5 +1,5 @@
 use crate::app::error::AppError;
-use crate::domain::url::url::Url;
+use crate::domain::url::url_entity::Url;
 use async_trait::async_trait;
 
 #[async_trait]

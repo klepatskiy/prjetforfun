@@ -1,5 +1,5 @@
 use crate::app::error::AppError;
-use crate::domain::url::url::Url;
+use crate::domain::url::url_entity::Url;
 use async_trait::async_trait;
 use chrono::Utc;
 use uuid::Uuid;
@@ -26,8 +26,8 @@ where
     }
 
     pub async fn execute(&self, full_url: String) -> Result<String, AppError> {
-        let parsed_url =
-            url::Url::parse(&*full_url.clone()).map_err(|e| AppError::URLParseError)?;
+        let parsed_url = url::Url::parse(&full_url.clone())
+            .map_err(|e| AppError::URLParseError(e.to_string()))?;
         let new_url = Url {
             id: Uuid::new_v4(),
             url_full: full_url.to_string(),

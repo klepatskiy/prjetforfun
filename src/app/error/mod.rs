@@ -6,6 +6,6 @@ pub enum AppError {
     DatabaseError(#[from] sqlx::Error),
     #[error("Database error:")]
     NotFound,
-    #[error("Parse url error:")]
-    URLParseError,
+    #[error("Parse url error: {0}")]
+    URLParseError(String),
 }
