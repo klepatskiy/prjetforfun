@@ -1,91 +1,83 @@
 mod domain;
 mod repository;
 mod config;
+mod di;
+mod app;
 
-use std::process::exit;
 use dotenv::dotenv;
 use std::sync::Arc;
 use tonic::{transport::Server, Request, Response, Status};
 
 use greeter::greeter_server::{Greeter, GreeterServer};
-use greeter::{HelloResponse, HelloRequest};
-use uuid::Uuid;
-use crate::domain::User;
-use crate::repository::{PostgresUserRepository, UserRepository};
+use crate::app::command::create_short_url::CreateShortUrlRepository;
+use crate::app::query::get_full_url::GetFullUrlRepository;
+use crate::di::Container;
+use crate::greeter::{CreateShortUrlRequest, CreateShortUrlResponse, GetUrlRequest, GetUrlResponse};
+use crate::repository::postgres::url_repository::url_repository::PostgresUrlRepository;
+use crate::repository::postgres::user_repository::user_repository::{UserRepository};
 
-// Импортируем сгенерированный proto файл в модуль
 pub mod greeter {
     tonic::include_proto!("greeter");
 }
 
-pub struct MyGreeter {
-    user_repo: Arc<dyn UserRepository>,
+pub struct MyGreeter<R, I>
+where
+    R: CreateShortUrlRepository + Send + Sync + 'static,
+    I: GetFullUrlRepository + Send + Sync + 'static,
+{
+    container: Arc<Container<R, I>>,
 }
 
-// Реализуем конструктор для MyGreeter
-impl MyGreeter {
-    pub fn new(user_repo: Arc<dyn UserRepository>) -> Self {
-        Self { user_repo }
+impl<R, I> MyGreeter<R, I>
+where
+    R: CreateShortUrlRepository + Send + Sync + 'static,
+    I: GetFullUrlRepository + Send + Sync + 'static,
+{
+    pub fn new(container: Arc<Container<R, I>>) -> Self {
+        MyGreeter { container }
     }
 }
 
-// Реализуем функции сервиса, определенные в proto
 #[tonic::async_trait]
-impl Greeter for MyGreeter {
-    async fn say_hello(
-        &self,
-        request: Request<HelloRequest>,
-    ) -> Result<Response<HelloResponse>, Status> {
-        println!("Received request from: {:?}", request);
+impl<R, I> Greeter for MyGreeter<R, I>
+where
+    R: CreateShortUrlRepository + Send + Sync + 'static,
+    I: GetFullUrlRepository + Send + Sync + 'static,
+{
+    async fn create_short_url(&self, request: Request<CreateShortUrlRequest>) -> Result<Response<CreateShortUrlResponse>, Status> {
+        let req = request.get_ref();
+        let url_result = self.container.shorten_command.execute(req.full_url.clone()).await;
 
-        let users = self.user_repo.users().await;
-
-
-        // Создаем новый объект User
-        let new_user = User {
-            id: Uuid::new_v4(),
-            name: "John Doe".to_string(),
-            email: "john.doe@example.com".to_string(),
-        };
-
-        // Пример создания нового пользователя
-        match self.user_repo.create(new_user).await {
-            Ok(user) => println!("Created user: {:?}", user),
-            Err(e) => eprintln!("Error creating user: {:?}", e),
+        match url_result {
+            Ok(short_url) => Ok(Response::new(CreateShortUrlResponse { short_url })),
+            Err(e) => Err(Status::internal(e.to_string())),
         }
+    }
 
-        let user_list = match users {
-            Ok(users) => users,
-            Err(_) => exit(0),
-        };
+    async fn get_url(&self, request: Request<GetUrlRequest>) -> Result<Response<GetUrlResponse>, Status> {
+        let req = request.get_ref();
+        let url_result = self.container.full_url_query.execute(req.clone().short_url).await;
 
-        for user in user_list {
-            println!("{}", user.id)
+        match url_result {
+            Ok(url) => Ok(Response::new(GetUrlResponse { full_url: url.url_full })),
+            Err(e) => Err(Status::internal(e.to_string())),
         }
-
-        let response = greeter::HelloResponse {
-            message: format!("Hello {}!", request.into_inner().name).into(),
-        };
-
-        Ok(Response::new(response))
     }
 }
 
-// Запускаем сервер
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    // Создаем пул соединений с базой данных
-    let pool = Arc::new(config::create_pool().await.expect("Failed to create pool"));
-
-    // Создаем репозиторий пользователей
-    let user_repo = Arc::new(PostgresUserRepository::new(pool));
-
-    // Создаем gRPC сервер с нашим Greeter
+    let pool = config::create_pool().await.expect("Failed to create pool");
+    let pool = Arc::new(pool);
+    
+    // let user_repo = Arc::new(PostgresUserRepository::new(Arc::clone(&pool)));
+    let repo = PostgresUrlRepository::new(Arc::clone(&pool));
+    let container = Container::new(repo.clone(), repo);
     let addr = "[::1]:50051".parse()?;
-    let greeter = MyGreeter::new(user_repo.clone());
-
+    let greeter = MyGreeter::new(Arc::new(container));
+    
     println!("Starting gRPC Server...");
     Server::builder()
         .add_service(GreeterServer::new(greeter))

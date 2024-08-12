@@ -1,14 +1,24 @@
 syntax = "proto3";
+
 package greeter;
 
-message HelloRequest {
-  string name = 1;
+message CreateShortUrlRequest {
+  string fullUrl = 1;
 }
 
-message HelloResponse {
-  string message = 1;
+message CreateShortUrlResponse {
+  string shortUrl = 1;
+}
+
+message GetUrlRequest {
+  string shortUrl = 1;
+}
+
+message GetUrlResponse {
+  string fullUrl = 1;
 }
 
 service Greeter {
-  rpc SayHello (HelloRequest) returns (HelloResponse);
+  rpc CreateShortUrl (CreateShortUrlRequest) returns (CreateShortUrlResponse);
+  rpc GetUrl (GetUrlRequest) returns (GetUrlResponse);
 }
