@@ -1,8 +1,8 @@
+use crate::app::error::AppError;
 use crate::domain::url::url::Url;
 use async_trait::async_trait;
-use sqlx::{PgPool};
+use sqlx::PgPool;
 use std::sync::Arc;
-use crate::app::error::AppError;
 
 #[derive(Clone)]
 pub struct PostgresUrlRepository {
@@ -11,14 +11,12 @@ pub struct PostgresUrlRepository {
 
 impl PostgresUrlRepository {
     pub fn new(pool: Arc<PgPool>) -> Self {
-        Self {
-            pool,
-        }
+        Self { pool }
     }
 }
 
 #[async_trait]
-impl crate::app::command::create_short_url::CreateShortUrlRepository for PostgresUrlRepository  {
+impl crate::app::command::create_short_url::CreateShortUrlRepository for PostgresUrlRepository {
     async fn create(&self, url: Url) -> Result<String, AppError> {
         let query = "
             INSERT INTO urls (id, url_full, url_short, user_id, created_at)
@@ -33,13 +31,11 @@ impl crate::app::command::create_short_url::CreateShortUrlRepository for Postgre
             .bind(url.created_at)
             .execute(&*self.pool)
             .await
-            .map_err(AppError::DatabaseError)?
-        ;
-        
+            .map_err(AppError::DatabaseError)?;
+
         Ok(url.url_short)
     }
 }
-
 
 #[async_trait]
 impl crate::app::query::get_full_url::GetFullUrlRepository for PostgresUrlRepository {
@@ -55,8 +51,7 @@ impl crate::app::query::get_full_url::GetFullUrlRepository for PostgresUrlReposi
             .bind(short_url)
             .fetch_one(&*self.pool)
             .await
-            .map_err(AppError::DatabaseError)?
-        ;
+            .map_err(AppError::DatabaseError)?;
 
         Ok(url)
     }

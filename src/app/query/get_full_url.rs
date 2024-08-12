@@ -1,6 +1,6 @@
-use async_trait::async_trait;
 use crate::app::error::AppError;
 use crate::domain::url::url::Url;
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait GetFullUrlRepository {

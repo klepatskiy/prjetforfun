@@ -1,7 +1,7 @@
-use async_trait::async_trait;
-use sqlx::{PgPool, Error};
-use std::sync::Arc;
 use crate::domain::user::user::User;
+use async_trait::async_trait;
+use sqlx::{Error, PgPool};
+use std::sync::Arc;
 
 #[async_trait]
 pub trait UserRepository: Send + Sync {
@@ -15,19 +15,16 @@ pub struct PostgresUserRepository {
 
 impl PostgresUserRepository {
     pub fn new(pool: Arc<PgPool>) -> Self {
-        Self { 
-            pool,
-        }
+        Self { pool }
     }
 }
 
 #[async_trait]
 impl UserRepository for PostgresUserRepository {
     async fn users(&self) -> Result<Vec<User>, Error> {
-        let users = sqlx::query_as!(
-            User,
-            "SELECT id, name, email FROM users"
-        ).fetch_all(&*self.pool).await?;
+        let users = sqlx::query_as!(User, "SELECT id, name, email FROM users")
+            .fetch_all(&*self.pool)
+            .await?;
 
         Ok(users)
     }
@@ -44,8 +41,8 @@ impl UserRepository for PostgresUserRepository {
             user.name,
             user.email
         )
-            .fetch_one(&*self.pool)
-            .await?;
+        .fetch_one(&*self.pool)
+        .await?;
 
         Ok(user)
     }

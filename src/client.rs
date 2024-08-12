@@ -1,5 +1,5 @@
-use greeter::greeter_client::GreeterClient;
 use crate::greeter::CreateShortUrlRequest;
+use greeter::greeter_client::GreeterClient;
 
 pub mod greeter {
     tonic::include_proto!("greeter");
