@@ -2,7 +2,7 @@ use crate::app::error::AppError;
 use crate::domain::url::url_entity::Url;
 use async_trait::async_trait;
 use chrono::Utc;
-use uuid::Uuid;
+use uuid::{Uuid};
 
 #[mockall::automock]
 #[async_trait]
@@ -29,7 +29,7 @@ where
         let parsed_url = url::Url::parse(&full_url.clone())
             .map_err(|e| AppError::URLParseError(e.to_string()))?;
         let new_url = Url {
-            id: Uuid::new_v4(),
+            id: Uuid::now_v7(),
             url_full: full_url.to_string(),
             url_short: parsed_url.to_string(),
             user_id: None,

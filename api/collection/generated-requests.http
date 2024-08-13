@@ -1,0 +1,13 @@
+### CreateShortUrl
+GRPC localhost:50051/greeter.Greeter/CreateShortUrl
+
+{
+  "fullUrl": "https://www.youtube1.com"
+}
+
+### GetUrl
+GRPC localhost:50051/greeter.Greeter/GetUrl
+
+{
+  "shortUrl": "some shorturl"
+}
